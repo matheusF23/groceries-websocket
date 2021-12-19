@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap');
+
+:root {
+    --primary-color:  rgb(17, 86, 102);
+    --primary-color-darker:  rgb(9, 48, 56);
+}
+
+* {
+    box-sizing: border-box;
+    outline: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--primary-color);
+    font-family: 'Open sans', sans-serif;
+    font-size: 1.3em;
+    line-height: 1.5em;
+}
+
+.container {
+    max-width: 640px;
+    max-height: 540px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+ul li {
+    border-radius: 10px;
+    background: rgb(176, 222, 233);
+    position: relative;
+    padding: 12px 8px 12px 40px;
+    list-style-type: none;
+    font-size: 16px;
+    transition: 0.2s;
+    line-height: 1.5em;
+}
+
+ul {
+    margin: 10px 0;
+}
+
+li {
+    right: 12px;
+    margin: 3px 0;
+    display: table;
+}
+
+.botLI {
+    background: rgb(125, 157, 165);
+}
+
+input, label, .sendBtn {
+    margin-bottom: 10px;
+    padding: 0 20px;
+    margin-top: 34px;
+    display: inline-block;
+}
+
+input {
+    font-size: 24px;
+    height: 50px;
+    width: 75%;
+    margin-left: 0.3em;
+}
+
+input:focus {
+    outline: 1px solid var(--primary-color);
+}
+
+.sendBtn {
+    border-radius: 10px;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    height: 50px;
+    cursor: pointer;
+    margin-left: 0.5em;
+    padding: 8px;
+}
+
+.sendBtn:hover {
+    background: var(--primary-color-darker);
+}
+
+/* Chat containers */
+.box {
+    font-size: small;
+    border: 2px solid #dedede;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+  }
+  
+  /* Darker chat container */
+  .darker {
+    text-align: right;
+    border-color: #ccc;
+    background-color: #ddd;
+  }
+  
+  /* Clear floats */
+  .box::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+  .chat {
+      overflow-y: scroll;
+      height: 340px;
+  }

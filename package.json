@@ -4,5 +4,18 @@
   "main": "index.js",
   "repository": "git@github.com:matheusF23/groceries-websocket.git",
   "author": "Matheus Figueiredo <figueiredo.matheus06@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "server": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "client": "node client/main.js"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "ws": "^8.2.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  }
 }
