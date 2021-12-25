@@ -4,6 +4,7 @@ const express = require('express');
 const CategoryService = require('./services/CategoryService')
 const ProductService = require('./services/ProductService')
 const OrderService = require('./services/OrderService');
+const products = require('./database/Products');
 
 require('dotenv').config();
 PORT = process.env.PORT || 3333;
@@ -14,46 +15,101 @@ const server = express()
 
 const wss = new ws.Server({ server });
 
-wss.on("connection", (socket) => {
-    console.log("Conexão estabelecida...");
+const introMessage = `
+Olá, para visualizar o os produtos disponíveis envie: "catalogo".</br>
+Para adicionar opções ao pedido envie: 
+"add opção quantidade".</br>
+Por exemplo: "add guaraná 1"</br>
+Para visualizar seu pedido envie: 
+"pedido"</br>
+Para finalizar o pedido envie:
+"finalizar" 
+`;
 
+wss.on("connection", async (socket) => {
+    socket.send(introMessage);
     socket.on("message", (message) => {
-        if (message == "categoria") {
-          socket.send("Seja bem vindo(a) ao mercadinho SD");
-          socket.send('\nEscolha o número da categoria:');
-          
-          const categories = JSON.parse(JSON.stringify(CategoryService.listCategories()));
-          const categoryKeys = Object.keys(categories);
-          
-          categoryKeys.forEach(key => {
-            socket.send(`${key}: ${categories[key]}`)
-          })
-          if (message == "1" ) {
-            getProductsByCategory('Frutas')
-            categoryKeys.forEach(key => {
-              socket.send(`${key}: ${categories[key]}`)
-            })
-          } else if (message == "2" ) {
-            getProductsByCategory('Bebidas')
-            categoryKeys.forEach(key => {
-              socket.send(`${key}: ${categories[key]}`)
-            })
-          } else if (message == "3" ) {
-            getProductsByCategory('Perecíveis')
-            categoryKeys.forEach(key => {
-              socket.send(`${key}: ${categories[key]}`)
-            })
-          } else if (message == "4" ) {
-            getProductsByCategory('Frios')
-            categoryKeys.forEach(key => {
-              socket.send(`${key}: ${categories[key]}`)
-            })
+      
+      let answer = message.toString().split(" ");
+
+      if (answer[0] == "catalogo") {
+        socket.send(showProducts());
+      } else if (answer[0] == "add") {    
+        if (answer.length >= 3) {
+          if (checkIfOrderCanBeAdded(answer[1])[0]) {
+            OrderService.addProduct(checkIfOrderCanBeAdded(answer[1])[1].id, answer[2])
+            socket.send("Produto adicionado com sucesso")
+          } else {
+            socket.send("Algo deu errado, tente novamente")
           }
-        } 
+        }
+        } else if (message == "pedido") {
+          showOrder(socket)
+        }
+        else if (message == "finalizar") {}
     });
 });
 
-function getProductsByCategory(category) {
-  const categories = JSON.parse(JSON.stringify(ProductService.getProductsByCategory(category)));
-  const categoryKeys = Object.keys(categories);
+function getCategory(categoryNumber, socket) {
+  switch (categoryNumber) {
+    case "1":
+      const categories1 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Frutas')));
+      const categoryKeys1 = Object.keys(categories2);
+      categoryKeys2.forEach(key => {
+      socket.send(`${key}: ${categories1[key]}`)
+    })
+    case "2":
+      const categories2 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Bebidas')));
+      const categoryKeys2 = Object.keys(categories2);
+      categoryKeys2.forEach(key => {
+      socket.send(`${key}: ${categories2[key]}`)
+    })
+    case "3":
+      const categories3 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Perecíveis')));
+      const categoryKeys3 = Object.keys(categories3);
+      categoryKeys3.forEach(key => {
+      socket.send(`${key}: ${categories3[key]}`)
+    })
+    case "4":
+      const categories4 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Frios')));
+      const categoryKeys4 = Object.keys(categories);
+      categoryKeys4.forEach(key => {
+      socket.send(`${key}: ${categories4[key]}`)
+    })
+  }
+}
+
+function checkIfOrderCanBeAdded(productName) {
+  let result;
+  let productToBeReturned;
+  products.products.find(product => {
+    if (product.description.toLowerCase() === productName) {
+      result = true
+      productToBeReturned = product
+    }
+    return;
+  })
+  return [result, productToBeReturned]
+}
+
+function showProducts() {
+  return `<h2> Frutas </h2>
+  Banana: R$ 0,50</br>
+  Laranja: R$ 1,00</br>
+  <h2> Bebidas </h2>
+  Coca Cola': R$ 5,00</br>
+  Leite: R$ 3,00</br>
+  Agua: R$ 2,00</br>
+  <h2> Pereciveis </h2>
+  Sal: R$ 1,00</br>
+  Açucar: R$ 2,00</br>
+  Macarrão: R$ 6,00</br>
+  <h2> Frios </h2>
+  Bisteca: R$ 40,00</br>
+  Frango: R$ 21,00</br>`
+}
+
+function showOrder(socket) {
+  let order = OrderService.getOrder()
+  socket.send(JSON.stringify(order))
 }
