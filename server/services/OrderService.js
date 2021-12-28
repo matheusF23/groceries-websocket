@@ -21,9 +21,9 @@ class OrderService {
     return order
   }
 
-  static deleteProduct(productId) {
+  static deleteProduct(productId, productName) {
     order.totalPrice -= order.products[productId].price
-    order.products.splice(productId, 1)
+    order.products.splice(productName, 1)
     return order
   }
 

@@ -18,10 +18,14 @@ const wss = new ws.Server({ server });
 const introMessage = `
 Olá, para visualizar o os produtos disponíveis envie: "catalogo".</br>
 Para adicionar opções ao pedido envie: 
-"add opção quantidade".</br>
-Por exemplo: "add guaraná 1"</br>
+"adicionar opção quantidade".</br>
+Por exemplo: "adicionar laranja 4"</br>
 Para visualizar seu pedido envie: 
 "pedido"</br>
+Para remover um produto do seu pedido envie: 
+"remover opção"</br>
+Para limpar o pedido envie: 
+"limpar"</br>
 Para finalizar o pedido envie:
 "finalizar" 
 `;
@@ -34,52 +38,53 @@ wss.on("connection", async (socket) => {
 
       if (answer[0] == "catalogo") {
         socket.send(showProducts());
-      } else if (answer[0] == "add") {    
+      } else if (answer[0] == "adicionar") {    
         if (answer.length >= 3) {
-          if (checkIfOrderCanBeAdded(answer[1])[0]) {
-            OrderService.addProduct(checkIfOrderCanBeAdded(answer[1])[1].id, answer[2])
+          if (checkIfProductCanBeAdded(answer[1])[0]) {
+            OrderService.addProduct(checkIfProductCanBeAdded(answer[1])[1].id, answer[2])
             socket.send("Produto adicionado com sucesso")
           } else {
             socket.send("Algo deu errado, tente novamente")
           }
         }
-        } else if (message == "pedido") {
-          showOrder(socket)
+      } else if (answer[0] == "remover") {
+        if (answer.length >= 2) {
+          if (checkIfProductCanBeRemoved(answer[1])[0]) {
+            OrderService.deleteProduct(checkIfProductCanBeRemoved(answer[1])[1].id, answer[1].description)
+            socket.send("Produto removido com sucesso")
+          } else {
+            socket.send("Algo deu errado, tente novamente")
+          }
         }
-        else if (message == "finalizar") {}
+      } else if (message == "pedido") {
+        showOrder(socket)
+      }
+      else if (message == "limpar") {
+        clearOrder(socket)
+      }
+      else if (message == "finalizar") {
+        checkIfCanDoCheckout(socket)
+      }
+      else {
+        socket.send("comando não encontrado")
+      }
     });
 });
 
-function getCategory(categoryNumber, socket) {
-  switch (categoryNumber) {
-    case "1":
-      const categories1 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Frutas')));
-      const categoryKeys1 = Object.keys(categories2);
-      categoryKeys2.forEach(key => {
-      socket.send(`${key}: ${categories1[key]}`)
-    })
-    case "2":
-      const categories2 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Bebidas')));
-      const categoryKeys2 = Object.keys(categories2);
-      categoryKeys2.forEach(key => {
-      socket.send(`${key}: ${categories2[key]}`)
-    })
-    case "3":
-      const categories3 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Perecíveis')));
-      const categoryKeys3 = Object.keys(categories3);
-      categoryKeys3.forEach(key => {
-      socket.send(`${key}: ${categories3[key]}`)
-    })
-    case "4":
-      const categories4 = JSON.parse(JSON.stringify(ProductService.getProductsByCategory('Frios')));
-      const categoryKeys4 = Object.keys(categories);
-      categoryKeys4.forEach(key => {
-      socket.send(`${key}: ${categories4[key]}`)
-    })
-  }
+function checkIfProductCanBeAdded(productName) {
+  let result;
+  let productToBeReturned;
+  products.products.find(product => {
+    if (product.description.toLowerCase() === productName) {
+      result = true
+      productToBeReturned = product
+    }
+    return;
+  })
+  return [result, productToBeReturned]
 }
 
-function checkIfOrderCanBeAdded(productName) {
+function checkIfProductCanBeRemoved(productName) {
   let result;
   let productToBeReturned;
   products.products.find(product => {
@@ -112,4 +117,18 @@ function showProducts() {
 function showOrder(socket) {
   let order = OrderService.getOrder()
   socket.send(JSON.stringify(order))
+}
+
+function clearOrder(socket) {
+  OrderService.clearOrder()
+  socket.send("Pedido cancelado")
+}
+
+function checkIfCanDoCheckout(socket) {
+  let order = OrderService.getOrder()
+  if (order.products.length >= 1) {
+    socket.send("Pedido finalizado com sucesso")
+  } else {
+    socket.send("Seu carrinho está vazio, adicione algo antes de finalizar")
+  }
 }
